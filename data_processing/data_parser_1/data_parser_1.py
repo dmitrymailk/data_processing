@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_integer
+import argparse
 
 
 class DataParser1:
@@ -110,7 +111,7 @@ class DataParser1:
 
         return dataset_object
 
-    def convert_number(x, source="") -> float:
+    def convert_number(self, x, source="") -> float:
         """Исправляет ошибки в числах и округляет до десятых
 
         Args:
@@ -167,3 +168,48 @@ class DataParser1:
 
         flat_data = self.dataframe_converter(data, date_creation)
         flat_data.to_excel(output_data_path, index=False,)
+
+
+if __name__ == "__main__":
+    # parse comand line arguments
+    # example
+    # python .\data_parser_1.py --input_data_path="11 марта 2022 управление.xls" --output_data_path="11 марта 2022 управление_processed.xls" --date_creation="12/23/21"
+    parser = argparse.ArgumentParser(description="Parsing parameters")
+    params = [
+        (
+            "--input_data_path",
+            {
+                "dest": "input_data_path",
+                "type": str,
+                "default": ""
+            },
+        ),
+        (
+            "--output_data_path",
+            {
+                "dest": "output_data_path",
+                "type": str,
+                "default": ""
+            },
+        ),
+        (
+            "--date_creation",
+            {
+                "dest": "date_creation",
+                "type": str,
+                "default": ""
+            },
+        ),
+    ]
+
+    for name, param in params:
+        parser.add_argument(name, **param)
+
+    args = parser.parse_args()
+    args = args._get_kwargs()
+    args = {arg[0]: arg[1] for arg in args}
+
+    # parse dataset
+    data_parser = DataParser1()
+    # print(args)
+    data_parser.parse(**args)
