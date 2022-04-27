@@ -7,7 +7,16 @@ class DataParser1:
     def __init__(self):
         pass
 
-    def get_table_category(self, data, start_index):
+    def get_table_category(self, data, start_index) -> str:
+        """Возвращает тип категории текущего участка таблицы
+
+        Args:
+            data (pd.DataFrame): вся прочитанная таблица
+            start_index (int): начало строки с которой осуществляется поиск категории
+
+        Returns:
+            str: категория
+        """
         category_index = start_index
         if start_index > 0:
             while not is_integer(data['Unnamed: 2'][category_index]) and start_index > 0:
@@ -22,12 +31,31 @@ class DataParser1:
 
         return table_type.strip()
 
-    def clean_type(self, type_data):
+    def clean_type(self, type_data) -> str:
+        """Убирает лишнее из глобального названия таблицы.
+        Чаще всего это название начинается с римской цифры. 
+        Обычно в документе их всего 2
+
+        Args:
+            type_data (str): Глобальная группа
+
+        Returns:
+            str: Очищенная глобальная группа
+        """
+
         if "." in str(type_data):
             return type_data[type_data.index('.')+1:].strip()
         return type_data
 
-    def row_parser(self, data):
+    def row_parser(self, data) -> pd.DataFrame:
+        """Обработчик всего документа
+
+        Args:
+            data (pd.DataFrame): исходный датасет
+
+        Returns:
+            pd.DataFrame: обработанный датасет
+        """
         i = 0
         amount = len(data)
         # amount = 100
@@ -82,16 +110,34 @@ class DataParser1:
 
         return dataset_object
 
-    def convert_number(x, source=None):
+    def convert_number(x, source="") -> float:
+        """Исправляет ошибки в числах и округляет до десятых
+
+        Args:
+            x (float): число для обработки
+            source (str, optional): Показывает источник откуда поступило число
+
+        Returns:
+            float: обработанное число
+        """
         if str(x).replace(".", "").isnumeric():
             x = round(x, 1)
             if source == "percent" and x == 1:
                 x = 100.0
             return x
         else:
-            return 0
+            return 0.0
 
-    def dataframe_converter(self, data, date_creation=None):
+    def dataframe_converter(self, data, date_creation=None) -> pd.DataFrame:
+        """Обрабатывает глобальные ошибки после начального парсинга данных
+
+        Args:
+            data (pd.DataFrame): исходный датасет
+            date_creation (str): Дата создания документа. Defaults to None.
+
+        Returns:
+            pd.DataFrame: конечный, исправленный датасет
+        """
         assert date_creation != None, "Не указана дата создания документа"
 
         data.fillna(np.nan, inplace=True)
@@ -106,10 +152,18 @@ class DataParser1:
         return flat_data
 
     def parse(self, input_data_path="", date_creation="", output_data_path=""):
+        """Вызывает функцию обработки исходного датасета и сохраняет обработанный
+        файл по указанному пути
+
+        Args:
+            input_data_path (str): путь к исходному датасету. Defaults to "".
+            date_creation (str): дата создания данного датасета. Defaults to "".
+            output_data_path (str): путь сохранения обработанного датасета. Defaults to "".
+        """
         assert input_data_path != "", "Не указан путь к исходному документу"
         assert output_data_path != "", "Не указан путь к сохранению обработанного документа"
 
         data = pd.read_excel(input_data_path)
 
         flat_data = self.dataframe_converter(data, date_creation)
-        flat_data.to_csv(output_data_path, index=False)
+        flat_data.to_excel(output_data_path, index=False,)
