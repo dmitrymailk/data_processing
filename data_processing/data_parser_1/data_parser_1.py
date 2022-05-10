@@ -5,6 +5,9 @@ import argparse
 
 
 class DataParser1:
+    """Парсер для документов с названием управление
+    """
+
     def __init__(self):
         pass
 
