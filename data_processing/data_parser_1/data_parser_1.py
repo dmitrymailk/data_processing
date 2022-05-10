@@ -1,3 +1,4 @@
+from typing import Dict
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_integer
@@ -51,14 +52,14 @@ class DataParser1:
             return type_data[type_data.index('.')+1:].strip()
         return type_data
 
-    def row_parser(self, data) -> pd.DataFrame:
+    def row_parser(self, data) -> Dict[str, list]:
         """Обработчик всего документа
 
         Args:
             data (pd.DataFrame): исходный датасет
 
         Returns:
-            pd.DataFrame: обработанный датасет
+            dict[str, list]: обработанный датасет
         """
         i = 0
         amount = len(data)
