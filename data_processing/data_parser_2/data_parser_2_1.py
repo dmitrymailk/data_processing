@@ -51,7 +51,7 @@ class DataParser2_1:
             row = map(str, list(row.values))
             str_row = "".join(row)
 
-            if str_row in search_phrase:
+            if search_phrase in str_row:
                 index_phrase = i
                 break
 
