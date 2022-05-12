@@ -4,7 +4,7 @@ import copy
 import argparse
 
 
-class DataParser2_1:
+class DataParser2_5:
     """Парсит документы с названием Паспорт.
     Ищет подтаблицу с названием 
     "Малоимущие семьи , имеющие несовершеннолетних детей(семьи, имеющие ср.-душ. доход ниже прож.минимума)"
@@ -203,6 +203,6 @@ if __name__ == "__main__":
     args = {arg[0]: arg[1] for arg in args}
 
     # parse dataset
-    data_parser = DataParser2_1()
+    data_parser = DataParser2_5()
     # print(args)
     data_parser.parse(**args)
