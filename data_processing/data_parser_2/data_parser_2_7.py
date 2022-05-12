@@ -6,7 +6,7 @@ import argparse
 
 class DataParser2_1:
     """Парсит документы с названием Паспорт.
-    Ищет подтаблицу с названием "Многодетные и приемные многодетные семьи"
+    Ищет подтаблицу с названием "Неполные малоимущие семьи, имеющие несовершеннолетних детей"
     """
 
     def __init__(self):
@@ -73,21 +73,10 @@ class DataParser2_1:
             "Наименование района",
             "Всего семей",
             "Всего детей",
-            "Детей 6-17 полных лет",
-            "Детей 18-23 полных лет (обучение в образов.учрежд.начального,среднего,высшего проф.образования очной формы)",
-            "с 3-мя детьми",
-            "с 4-мя детьми",
-            "с 5-ю детьми",
-            "с 6-ю детьми",
-            "с 7-ю детьми",
-            "с 8-ю детьми",
-            "с 9-ю детьми",
-            "с 10-ю детьми",
-            "с 11-ю детьми",
-            "с 12-ю детьми",
-            "с 13-ю детьми",
-            "с 14-ю детьми",
-            "с 15-ю детьми"
+            "Семей одиноких матерей",
+            "Детей одиноких матерей",
+            "Семей одиноких отцов",
+            "Детей одиноких отцов"
         ]
         object_part = {
             "column_pos": [],
@@ -101,7 +90,7 @@ class DataParser2_1:
         table_end_index_row = 0
         search_table_start_index = 0
 
-        search_phrase = "Многодетные и приемные многодетные семьи"
+        search_phrase = "Неполные малоимущие"
         search_table_start_index = self.search_table_start_by_name(
             dataset=dataset,
             search_phrase=search_phrase
@@ -180,9 +169,7 @@ class DataParser2_1:
 if __name__ == "__main__":
     # parse comand line arguments
     # example
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_22.03.xls" --output_data_path="Паспорт_22.03_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт02.xls" --output_data_path="Паспорт02_processed_1.xls" --date_creation="12/23/21"
+    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed.xls" --date_creation="12/23/21"
     parser = argparse.ArgumentParser(description="Parsing parameters")
     params = [
         (

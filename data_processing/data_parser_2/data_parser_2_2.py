@@ -6,7 +6,7 @@ import argparse
 
 class DataParser2_1:
     """Парсит документы с названием Паспорт.
-    Ищет подтаблицу с названием "Многодетные и приемные многодетные семьи"
+    Ищет подтаблицу с названием "Многодетные семьи"
     """
 
     def __init__(self):
@@ -101,7 +101,7 @@ class DataParser2_1:
         table_end_index_row = 0
         search_table_start_index = 0
 
-        search_phrase = "Многодетные и приемные многодетные семьи"
+        search_phrase = "Многодетные семьи"
         search_table_start_index = self.search_table_start_by_name(
             dataset=dataset,
             search_phrase=search_phrase
@@ -180,9 +180,7 @@ class DataParser2_1:
 if __name__ == "__main__":
     # parse comand line arguments
     # example
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_22.03.xls" --output_data_path="Паспорт_22.03_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт02.xls" --output_data_path="Паспорт02_processed_1.xls" --date_creation="12/23/21"
+    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed.xls" --date_creation="12/23/21"
     parser = argparse.ArgumentParser(description="Parsing parameters")
     params = [
         (

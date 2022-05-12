@@ -6,7 +6,7 @@ import argparse
 
 class DataParser2_1:
     """Парсит документы с названием Паспорт.
-    Ищет подтаблицу с названием "Многодетные и приемные многодетные семьи"
+    Ищет подтаблицу с названием "Семьи, имеющие несовершеннолетних детей-инвалидов"
     """
 
     def __init__(self):
@@ -71,23 +71,11 @@ class DataParser2_1:
         """
         columns_names = [
             "Наименование района",
-            "Всего семей",
-            "Всего детей",
-            "Детей 6-17 полных лет",
-            "Детей 18-23 полных лет (обучение в образов.учрежд.начального,среднего,высшего проф.образования очной формы)",
-            "с 3-мя детьми",
-            "с 4-мя детьми",
-            "с 5-ю детьми",
-            "с 6-ю детьми",
-            "с 7-ю детьми",
-            "с 8-ю детьми",
-            "с 9-ю детьми",
-            "с 10-ю детьми",
-            "с 11-ю детьми",
-            "с 12-ю детьми",
-            "с 13-ю детьми",
-            "с 14-ю детьми",
-            "с 15-ю детьми"
+            "Всего детей-инвалидов",
+            "0-2 года (полных лет)",
+            "3-6 года (полных лет)",
+            "7-14 лет (полных лет)",
+            "15-17 лет (полных лет)"
         ]
         object_part = {
             "column_pos": [],
@@ -101,7 +89,7 @@ class DataParser2_1:
         table_end_index_row = 0
         search_table_start_index = 0
 
-        search_phrase = "Многодетные и приемные многодетные семьи"
+        search_phrase = "детей-инвалидов"
         search_table_start_index = self.search_table_start_by_name(
             dataset=dataset,
             search_phrase=search_phrase
@@ -110,12 +98,13 @@ class DataParser2_1:
         for i in range(search_table_start_index, len(dataset)):
             row = dataset.iloc[i]
             row = map(str, list(row.values))
-            str_row = "".join(row)
+            str_row = "".join(row).replace("\n", " ").strip()
             if columns_finded > 0:
                 for col_name in columns_names:
                     if col_name in str_row and not columns_first_finded[col_name]:
                         for j in range(columns_amount):
-                            col_data = dataset.iloc[i, j]
+                            col_data = str(dataset.iloc[i, j]).replace(
+                                "\n", " ").strip()
                             if col_name == col_data:
                                 columns_data[col_name]['column_pos'] = [i, j]
                                 columns_finded -= 1
@@ -180,9 +169,7 @@ class DataParser2_1:
 if __name__ == "__main__":
     # parse comand line arguments
     # example
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт_22.03.xls" --output_data_path="Паспорт_22.03_processed_1.xls" --date_creation="12/23/21"
-    # python .\data_parser_2_1.py --input_data_path="Паспорт02.xls" --output_data_path="Паспорт02_processed_1.xls" --date_creation="12/23/21"
+    # python .\data_parser_2_1.py --input_data_path="Паспорт_21.02.xls" --output_data_path="Паспорт_21.02_processed.xls" --date_creation="12/23/21"
     parser = argparse.ArgumentParser(description="Parsing parameters")
     params = [
         (
