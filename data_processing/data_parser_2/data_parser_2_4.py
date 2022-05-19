@@ -132,7 +132,7 @@ class DataParser2_4:
             if i == 0:
                 target_sum_fields_indexes = [
                     j for j, name in enumerate(col_data) if name in city_centers]
-                col_data.append("Г. Волгоград")
+                col_data.append("г. Волгоград")
 
             elif isinstance(col_data[0], float) or isinstance(col_data[0], int):
                 total = sum([col_data[j] for j in target_sum_fields_indexes])
