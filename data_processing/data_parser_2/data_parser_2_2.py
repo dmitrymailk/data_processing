@@ -12,7 +12,7 @@ class DataParser2_2:
     def __init__(self):
         ...
 
-    def parse_column_table(self, dataset, column_pos, end_index, column_name):
+    def parse_column_table(self, dataset, column_pos, end_index, column_name) -> list:
         col_data = []
         start_index_row = column_pos[0] + 1
         column_index = column_pos[1]
@@ -128,7 +128,7 @@ class DataParser2_2:
 
         dataset_object = {name: [] for name in columns_names}
 
-        for col_name in columns_names:
+        for i, col_name in enumerate(columns_names):
             col_info = columns_data[col_name]
             column_pos = col_info["column_pos"]
             # print(column_pos)
@@ -138,6 +138,12 @@ class DataParser2_2:
                 end_index=table_end_index_row,
                 column_name=col_name
             )
+            if i == 0:
+                col_data.append("Итого")
+            elif isinstance(col_data[0], float) or isinstance(col_data[0], int):
+                total = sum(col_data)
+                col_data.append(total)
+
             dataset_object[col_name] = col_data
 
         return dataset_object
