@@ -10,7 +10,7 @@ class DataParser2_7:
     """
 
     def __init__(self):
-        ...
+        self.columns_names = []
 
     def parse_column_table(self, dataset, column_pos, end_index, column_name) -> list:
         col_data = []
@@ -69,7 +69,7 @@ class DataParser2_7:
         Returns:
             dict[str, list]: обработанный датасет
         """
-        columns_names = [
+        self.columns_names = [
             "Наименование района",
             "Всего семей",
             "Всего детей",
@@ -78,6 +78,8 @@ class DataParser2_7:
             "Семей одиноких отцов",
             "Детей одиноких отцов"
         ]
+        columns_names = self.columns_names
+
         object_part = {
             "column_pos": [],
             "data": []
@@ -116,7 +118,9 @@ class DataParser2_7:
                 break
 
         dataset_object = {name: [] for name in columns_names}
-
+        target_sum_fields_indexes = []
+        city_centers = set(["Ворошиловский", "Дзержинский", "Кировский", "Красноармейский",
+                           "Краснооктябрьский", 'Советский', "Тракторозаводский", "Центральный"])
         for i, col_name in enumerate(columns_names):
             col_info = columns_data[col_name]
             column_pos = col_info["column_pos"]
@@ -129,9 +133,12 @@ class DataParser2_7:
             )
 
             if i == 0:
-                col_data.append("Итого")
+                target_sum_fields_indexes = [
+                    j for j, name in enumerate(col_data) if name in city_centers]
+                col_data.append("Г. Волгоград")
+
             elif isinstance(col_data[0], float) or isinstance(col_data[0], int):
-                total = sum(col_data)
+                total = sum([col_data[j] for j in target_sum_fields_indexes])
                 col_data.append(total)
 
             dataset_object[col_name] = col_data
@@ -153,6 +160,7 @@ class DataParser2_7:
         flat_data = pd.DataFrame(data=table_rows)
 
         flat_data['Дата'] = date_creation
+        flat_data = flat_data[['Дата', *self.columns_names]]
         return flat_data
 
     def parse(self, input_data_path="", date_creation="", output_data_path=""):
