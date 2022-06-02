@@ -56,13 +56,9 @@ class DataParser_3:
 
         code_pos = self._coords("Код РП")
         some_type_pos = self._coords("Тип")
-        name_result_pos = self._coords("""Наименование
-        результата(Р), показателя (П), задачи(З), 
-        общественно-значимого результата (ОЗР)""")
-        type_unit_pos = self._coords("""Тип
-        ед.изм""")
-        units_pos = self._coords("""Ед. 
-        изм.""")
+        name_result_pos = self._coords("""(ОЗР)""")
+        type_unit_pos = self._coords("""ед.изм""")
+        units_pos = self._coords("""Ед.""")
         some_plan_pos = self._coords("План")
         some_sort_pos = self._coords("Вид")
 
@@ -96,7 +92,7 @@ class DataParser_3:
         ]
         flat_dataset = {name: [] for name in new_dataset_columns}
 
-        for i in range(7, len(self.dataset)):
+        for i in range(6, len(self.dataset)):
             code = self.dataset.iloc[i, code_pos[1]]
             some_type = self.dataset.iloc[i, some_type_pos[1]]
             some_sort = self.dataset.iloc[i, some_sort_pos[1]]
@@ -104,9 +100,9 @@ class DataParser_3:
                                             name_result_pos[1]].replace("\n", " ")
             type_unit = self.dataset.iloc[i, type_unit_pos[1]]
             units = self.dataset.iloc[i, units_pos[1]]
-
-            if len(str(some_type)) == 0:
-                general_name = self.dataset.iloc[i, type_start[1]+1]
+            # print(some_type, name_result)
+            if len(str(some_type)) == 0 or some_type is None or some_type != some_type:
+                general_name = str(name_result)
 
             parsed_years = []
 
@@ -264,4 +260,6 @@ class DataParser_3:
 
 
 parser = DataParser_3()
-parser.parse("./data/ПиР на 30.04.2022+Риски.xlsx")
+# parser.parse("./data/ПиР на 30.04.2022+Риски.xlsx")
+parser.parse(
+    "D:/programming/AI/volgograd/data_processing/data_parser_3/data/ПиР на 30.04.2022+Риски.xlsx")
