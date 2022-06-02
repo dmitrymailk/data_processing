@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import openpyxl
 from pathlib import Path
+import argparse
+from typing import Union, List
 
 
 class DataParser_3:
@@ -11,16 +13,28 @@ class DataParser_3:
         self.sheet_names = []
         self.exel_writer = []
 
-    def _get_sheet_names(self):
+    def _get_sheet_names(self) -> List[str]:
+        """Возвращает список всех валидных страниц в документе
+
+        Returns:
+            List[str]: список всех валидных страниц в документе
+        """
         wb = openpyxl.load_workbook(self.filename)
         sheet_names = wb.sheetnames
         sheet_names.remove("РИСКИ")
         self.sheet_names = sheet_names
         return sheet_names
 
-    def parse(self, input_name=""):
-        self.filename = input_name
-        filename_stem = self.get_file_name(input_name)
+    def parse(self, input_data_path: str = "") -> None:
+        """Парсит все страницы документа и сохраняет их в новый файл
+
+        Args:
+            input_data_path (str): путь к датасету
+        """
+        assert input_data_path != "", "Не указан путь к исходному документу"
+
+        self.filename = input_data_path
+        filename_stem = self.get_file_name(input_data_path)
         self.exel_writer = pd.ExcelWriter(
             f"{filename_stem}__processed.xlsx", engine='openpyxl')
         sheet_names = self._get_sheet_names()
@@ -32,7 +46,7 @@ class DataParser_3:
         self.exel_writer.save()
         self.exel_writer.close()
 
-    def _parse_sheet(self, sheet_name):
+    def _parse_sheet(self, sheet_name: str) -> None:
         self.dataset = pd.read_excel(
             self.filename, sheet_name=sheet_name, engine='openpyxl')
 
@@ -214,12 +228,28 @@ class DataParser_3:
         new_dataset.to_excel(self.exel_writer, index=False,
                              sheet_name=sheet_name)
 
-    def _row_stringify(self, row):
+    def _row_stringify(self, row: pd.DataFrame) -> str:
+        """Превращает строчку датасета в строку
+
+        Args:
+            row (pd.DataFrame): pandas строка
+
+        Returns:
+            str: строка датасета в виде строки
+        """
         row = map(str, list(row.values))
         str_row = "".join(row)
         return str_row
 
-    def _coords(self, name):
+    def _coords(self, name: str) -> np.array:
+        """Ищет первое вхождение строки в датасете и возвращает координаты этой ячейки
+
+        Args:
+            name (str): поисковой запрос
+
+        Returns:
+            np.array: координаты [x, y]
+        """
         row_index = 0
         for i in range(len(self.dataset)):
             row = self.dataset.iloc[i]
@@ -236,18 +266,43 @@ class DataParser_3:
 
         return np.array([row_index, col_index])
 
-    def _is_float_numeric(self, num):
+    def _is_float_numeric(self, num: str) -> bool:
+        """Проверяет строку на число
+
+        Args:
+            num (str): строка, которую мы хотим проверить на число
+
+        Returns:
+            bool: результат проверки на число
+        """
         num = str(num)
         return num.replace(".", "").isnumeric()
 
-    def _clean_number(self, num):
+    def _clean_number(self, num: str) -> str:
+        """Очищает число от возможного текстового 
+        описания или неправильного формата
+
+        Args:
+            num (str): число с шумом
+
+        Returns:
+            str: очищенное число
+        """
         if "(" in num:
             bracket_pos = num.index("(")
             num = num[:bracket_pos].strip().replace(
                 "\n", "").replace(",", ".")
         return num
 
-    def _clean_percent(self, num):
+    def _clean_percent(self, num: str) -> Union[str, float]:
+        """Очищает элемент колонки процента
+
+        Args:
+            num (str): предполагаемое число из колонки с процентом
+
+        Returns:
+            Union[str, float]: может вернуть пустую строку, а может преобразованные проценты
+        """
         num = str(num).replace("–", "").replace("_", "")
         if self._is_float_numeric(num):
             num = round(float(num), 1) * 100
@@ -255,11 +310,40 @@ class DataParser_3:
             num = ""
         return num
 
-    def get_file_name(self, path):
-        return Path(path).stem
+    def get_file_name(self, path: str) -> str:
+        """Возвращает имя файла без его расширения
+
+        Args:
+            path (str): относительный или абсолютный путь
+
+        Returns:
+            str: имя файла
+        """
+        return str(Path(path).stem)
 
 
-parser = DataParser_3()
-# parser.parse("./data/ПиР на 30.04.2022+Риски.xlsx")
-parser.parse(
-    "D:/programming/AI/volgograd/data_processing/data_parser_3/data/ПиР на 30.04.2022+Риски.xlsx")
+if __name__ == "__main__":
+    # parse comand line arguments
+    # example
+    # python .\data_parser_3.py --input_data_path="./data/ПиР на 30.04.2022+Риски.xlsx"
+    parser = argparse.ArgumentParser(description="Parsing parameters")
+    params = [
+        (
+            "--input_data_path",
+            {
+                "dest": "input_data_path",
+                "type": str,
+                "default": ""
+            },
+        ),
+    ]
+
+    for name, param in params:
+        parser.add_argument(name, **param)
+
+    args = parser.parse_args()
+    args = args._get_kwargs()
+    args = {arg[0]: arg[1] for arg in args}
+
+    data_parser = DataParser_3()
+    data_parser.parse(**args)
