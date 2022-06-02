@@ -132,3 +132,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*.xlsx
