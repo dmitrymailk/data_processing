@@ -13,7 +13,7 @@ class Data_parser_10:
     def check_document_type(self, data: pd.DataFrame) -> int:
         """проверяет тип документа
         """
-        cell_data_type = type(data.iloc[7, 1])
+        cell_data_type = type(data.iloc[6, 1])
         if cell_data_type is str:
             return "with_numerical_date"
         else:
@@ -93,7 +93,7 @@ class Data_parser_10:
                         area_name = dataset.iloc[3, col].strip()
 
                     avg_price = dataset.iloc[j, col]
-                    date = str(dataset.iloc[5, col]).strip()
+                    date = str(dataset.iloc[6, col]).strip()
                     if document_type == "without_numerical_date":
                         date = "01.06.2022"
 
@@ -163,11 +163,9 @@ class Data_parser_10:
 
     def parse(self,
               input_data_path="",
-              output_data_path="",
               input_data_types_path=""
               ) -> None:
         assert input_data_path != "", "Не указан путь к исходному документу"
-        assert output_data_path != "", "Не указан путь к сохранению обработанного документа"
         assert input_data_types_path != "", "Не указан путь к файлу с названиями типов продуктов"
 
         self.input_data_types_path = input_data_types_path
@@ -175,12 +173,13 @@ class Data_parser_10:
         dataset = pd.read_excel(input_data_path)
 
         dataset: pd.DataFrame = self.dataset_converter(dataset=dataset)
+        output_data_path = input_data_path.replace(".xlsx", "_parsed.xlsx")
         dataset.to_excel(output_data_path, index=False, encoding='utf-8')
 
 
 if __name__ == '__main__':
     # parse comand line arguments
-    # python .\data_parser_10.py --input_data_path="./Средние_потребительские_цены_на_продовольственные_товарыСредние.xlsx" --input_data_types_path="./types.xlsx" --output_data_path="./test_1_processs.xlsx"
+    # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\Исходник УслугиСредние_потребительские_цены_на_услуги.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\types 7.xlsx"
     parser = argparse.ArgumentParser(description="Parsing parameters")
     params = [
         (
@@ -195,14 +194,6 @@ if __name__ == '__main__':
             "--input_data_types_path",
             {
                 "dest": "input_data_types_path",
-                        "type": str,
-                "default": ""
-            },
-        ),
-        (
-            "--output_data_path",
-            {
-                "dest": "output_data_path",
                         "type": str,
                 "default": ""
             },
