@@ -4,6 +4,9 @@ import argparse
 
 
 class DataParser_7:
+    """парсер для документов вида Анализ финансирования на 23.06.2022
+    """
+
     def _row_stringify(self, row: pd.DataFrame) -> str:
         """Превращает строчку датасета в строку
 

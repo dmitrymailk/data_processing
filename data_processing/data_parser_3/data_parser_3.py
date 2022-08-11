@@ -7,6 +7,9 @@ from typing import Union, List
 
 
 class DataParser_3:
+    """Парсер для документов типа ПиР на 30.04.2022+Риски
+    """
+
     def __init__(self):
         self.dataset = []
         self.filename = ""

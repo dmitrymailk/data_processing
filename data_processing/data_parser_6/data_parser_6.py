@@ -109,6 +109,9 @@ product_types = {item[1]: item[0] for item in product_types_text}
 
 
 class DataParser_6:
+    """парсер для набора документов типа 06.05_Мониторинг цен
+    """
+
     def __init__(self) -> None:
         self.total_dataset = []
         self.dataset = []
