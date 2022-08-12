@@ -8,6 +8,7 @@ class Data_parser_10:
     """
 
     def __init__(self) -> None:
+        self.input_data_types_path = ""
         self.non_numeric_dates = [
             "Январь",
             "Февраль",
@@ -24,9 +25,6 @@ class Data_parser_10:
         ]
         self.non_numeric_dates = {date: i+1 for i,
                                   date in enumerate(self.non_numeric_dates)}
-
-    def __init__(self) -> None:
-        self.input_data_types_path = ""
 
     def check_document_type(self, data: pd.DataFrame) -> int:
         """проверяет тип документа
