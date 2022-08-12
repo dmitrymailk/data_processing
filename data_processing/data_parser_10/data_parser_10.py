@@ -112,6 +112,7 @@ class Data_parser_10:
                     date = str(dataset.iloc[6, col]).strip()
                     if document_type == "without_numerical_date":
                         # date = "01.06.2022"
+                        date = str(dataset.iloc[5, col]).strip()
                         date = self.non_numeric_dates[date]
                         date = f"01.{date}.2022"
 
