@@ -8,6 +8,24 @@ class Data_parser_10:
     """
 
     def __init__(self) -> None:
+        self.non_numeric_dates = [
+            "Январь",
+            "Февраль",
+            "Март",
+            "Апрель",
+            "Май",
+            "Июнь",
+            "Июль",
+            "Август",
+            "Сентябрь",
+            "Октябрь",
+            "Ноябрь",
+            "Декабрь",
+        ]
+        self.non_numeric_dates = {date: i+1 for i,
+                                  date in enumerate(self.non_numeric_dates)}
+
+    def __init__(self) -> None:
         self.input_data_types_path = ""
 
     def check_document_type(self, data: pd.DataFrame) -> int:
@@ -95,7 +113,9 @@ class Data_parser_10:
                     avg_price = dataset.iloc[j, col]
                     date = str(dataset.iloc[6, col]).strip()
                     if document_type == "without_numerical_date":
-                        date = "01.06.2022"
+                        # date = "01.06.2022"
+                        date = self.non_numeric_dates[date]
+                        date = f"01.{date}.2022"
 
                     products_type = product_types_dict[product_name]
                     flat_dataset["Дата"].append(date)
@@ -136,6 +156,7 @@ class Data_parser_10:
         product_name_set = list(product_name_set)
 
         p_data = pd.DataFrame(data=flat_dataset)
+        p_data.to_excel("./test.xlsx", index=False)
 
         for date in dates_set:
             for product_name in product_name_set:
@@ -147,6 +168,7 @@ class Data_parser_10:
                     "prices": [],
                     "indexes": []
                 }
+
                 for i, price in enumerate(prices_values):
                     if not pd.isna(price):
                         non_nan_prices['prices'].append(price)
@@ -180,6 +202,7 @@ class Data_parser_10:
 if __name__ == '__main__':
     # parse comand line arguments
     # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\Исходник УслугиСредние_потребительские_цены_на_услуги.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\types 7.xlsx"
+    # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\3_Индекс_потребительских_цен_ИПЦ_ПродыИндекс_потребительских_цен.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\types.xlsx"
     parser = argparse.ArgumentParser(description="Parsing parameters")
     params = [
         (
