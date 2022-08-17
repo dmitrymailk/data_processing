@@ -146,7 +146,7 @@ class Data_parser_10:
                     # print(p_type, products_type)
                     for p_type in product_types_set:
                         if p_type.strip() == products_type.strip():
-                            flat_dataset[products_type].append(products_type)
+                            flat_dataset[products_type].append(product_name)
                         else:
                             flat_dataset[p_type].append("")
 
