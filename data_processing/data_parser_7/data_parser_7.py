@@ -46,6 +46,25 @@ class DataParser_7:
 
         return np.array([row_index, col_index])
 
+    def has_bad_strings(self, row_str: str) -> bool:
+        bad_strings = [
+            "COVID",
+            "Социальное обеспечение - всего",
+            "Итого из областного бюджета",
+            "Социальная поддержка семей, имеющих детей",
+            "Меры социальной поддержки ветеранов",
+            "Меры социальной поддержки отдельных категорий граждан",
+            "Меры социальной поддержки иных категорий граждан",
+            "Государственная социальная помощь",
+            "Дополнительные меры социальной помощи",
+        ]
+        
+        for bad_string in bad_strings:
+            if bad_string in row_str:
+                return True
+        
+        return False
+
     def dataset_converter(self, dataset: pd.DataFrame):
         start_coords_y, start_coords_x = self._coords(
             dataset, "Наименование статей расходов")
@@ -53,8 +72,8 @@ class DataParser_7:
         new_dataset_columns = [
             'Дата',
             'Наименование статей расходов',
-            'Категория',
-            'Наименование подстатей расходов',
+            # 'Категория',
+            # 'Наименование подстатей расходов',
             'Бюджетные ассигнования на 2022 год ',
             'Лимиты бюджетных обязательств на 2022 год',
             'КП Выделенный Облфином',
@@ -72,26 +91,21 @@ class DataParser_7:
         subname = ""
         def empty_to_zero(x): return x if x != "" else 0
 
-        for i in range(start_coords_y+6, len(dataset)):
+        not_valid_names = [
+            'COVID',
+            "2Социальное обеспечение",
+            "2.1Социальная поддержка семей",
+        ]
+
+        for i in range(start_coords_y+3, len(dataset)):
             # print(i)
             row = dataset.iloc[i]
             str_row = self._row_stringify(row=row)
+            if not self.has_bad_strings(str_row):
+                name = str(dataset.iloc[i, 2]).replace("\n", "")
 
-            if not "COVID" in str_row:
-                name_1 = dataset.iloc[i, 2].replace("\n", "")
-                if "-" in name_1:
-                    name_1 = name_1[:name_1.index("-")]
-                num = dataset.iloc[i, 0]
-                if str(num).replace(".", "").isdigit():
-                    if "." in str(num):
-                        subname = name_1
-                    else:
-                        name = name_1
-                        subname = name
                 flat_dataset['Дата'].append(self.date_creation)
                 flat_dataset['Наименование статей расходов'].append(name)
-                flat_dataset['Категория'].append(subname)
-                flat_dataset['Наименование подстатей расходов'].append(name_1)
                 flat_dataset['Бюджетные ассигнования на 2022 год '].append(
                     empty_to_zero(dataset.iloc[i, 5]))
                 flat_dataset['Лимиты бюджетных обязательств на 2022 год'].append(
@@ -111,9 +125,6 @@ class DataParser_7:
                 flat_dataset['Выставленные заявки на оплату расходов '].append(
                     empty_to_zero(dataset.iloc[i, 13]))
                 flat_dataset['Единица измерения'].append("тыс. руб")
-
-            if "Аппарат комитета" in str_row:
-                break
 
         return flat_dataset
 
