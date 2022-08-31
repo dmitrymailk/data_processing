@@ -72,8 +72,6 @@ class DataParser_7:
         new_dataset_columns = [
             'Дата',
             'Наименование статей расходов',
-            # 'Категория',
-            # 'Наименование подстатей расходов',
             'Бюджетные ассигнования на 2022 год ',
             'Лимиты бюджетных обязательств на 2022 год',
             'КП Выделенный Облфином',
@@ -88,14 +86,7 @@ class DataParser_7:
 
         flat_dataset = {name: [] for name in new_dataset_columns}
         name = ""
-        subname = ""
         def empty_to_zero(x): return x if x != "" else 0
-
-        not_valid_names = [
-            'COVID',
-            "2Социальное обеспечение",
-            "2.1Социальная поддержка семей",
-        ]
 
         for i in range(start_coords_y+3, len(dataset)):
             # print(i)
