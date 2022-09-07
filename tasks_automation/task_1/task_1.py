@@ -10,12 +10,10 @@ driver = webdriver.Firefox(
 )
 initial_web_page = "http://bi.gks.ru/biportal/contourbi.jsp?allsol=1&solution=Dashboard&project=%2FDashboard%2FPrices_week"
 driver.get(initial_web_page)
+time.sleep(15)
 
 links = driver.find_elements(by=By.TAG_NAME, value="td")
-
-for link in links:
-    link.click()
-    time.sleep(5000)
+print(links)
 
 
 driver.close()

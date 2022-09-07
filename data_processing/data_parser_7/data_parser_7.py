@@ -5,6 +5,7 @@ import argparse
 
 class DataParser_7:
     """парсер для документов вида Анализ финансирования на 23.06.2022
+    подтаблица ОБ
     """
 
     def _row_stringify(self, row: pd.DataFrame) -> str:
@@ -58,11 +59,11 @@ class DataParser_7:
             "Государственная социальная помощь",
             "Дополнительные меры социальной помощи",
         ]
-        
+
         for bad_string in bad_strings:
             if bad_string in row_str:
                 return True
-        
+
         return False
 
     def dataset_converter(self, dataset: pd.DataFrame):
