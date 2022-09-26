@@ -68,62 +68,79 @@ class DataParser_7:
 
     def dataset_converter(self, dataset: pd.DataFrame):
         start_coords_y, start_coords_x = self._coords(
-            dataset, "Наименование статей расходов")
+            dataset, "Итого из областного бюджета"
+        )
+        start_coords_y_1, start_coords_x_1 = self._coords(
+            dataset, "Бюджетные ассигнования на 2022 год"
+        )
 
         new_dataset_columns = [
-            'Дата',
-            'Наименование статей расходов',
-            'Бюджетные ассигнования на 2022 год ',
-            'Лимиты бюджетных обязательств на 2022 год',
-            'КП Выделенный Облфином',
-            'КП Неиспользовано по состоянию на 27 января 2022г.(не выставлено заявок)',
-            'Профинансировано',
-            '% от бюджетных ассигований на 2022 г.',
-            '% от лимитов бюджетных обязательств на 2022 г.',
-            '% от кассового плана',
-            'Выставленные заявки на оплату расходов ',
-            'Единица измерения'
+            "Дата",
+            "Наименование статей расходов",
+            "Бюджетные ассигнования на 2022 год ",
+            "Лимиты бюджетных обязательств на 2022 год",
+            "КП Выделенный Облфином",
+            "КП Неиспользовано по состоянию на 27 января 2022г.(не выставлено заявок)",
+            "Профинансировано",
+            "% от бюджетных ассигований на 2022 г.",
+            "% от лимитов бюджетных обязательств на 2022 г.",
+            "% от кассового плана",
+            "Выставленные заявки на оплату расходов ",
+            "Единица измерения",
         ]
 
         flat_dataset = {name: [] for name in new_dataset_columns}
         name = ""
-        def empty_to_zero(x): return x if x != "" else 0
 
-        for i in range(start_coords_y+3, len(dataset)):
+        def empty_to_zero(x):
+            return x if x != "" else 0
+
+        for i in range(start_coords_y, len(dataset)):
             # print(i)
             row = dataset.iloc[i]
             str_row = self._row_stringify(row=row)
             if not self.has_bad_strings(str_row):
                 name = str(dataset.iloc[i, 2]).replace("\n", "")
 
-                flat_dataset['Дата'].append(self.date_creation)
-                flat_dataset['Наименование статей расходов'].append(name)
-                flat_dataset['Бюджетные ассигнования на 2022 год '].append(
-                    empty_to_zero(dataset.iloc[i, 5]))
-                flat_dataset['Лимиты бюджетных обязательств на 2022 год'].append(
-                    empty_to_zero(dataset.iloc[i, 6]))
-                flat_dataset['КП Выделенный Облфином'].append(
-                    empty_to_zero(dataset.iloc[i, 7]))
-                flat_dataset['КП Неиспользовано по состоянию на 27 января 2022г.(не выставлено заявок)'].append(
-                    empty_to_zero(dataset.iloc[i, 8]))
-                flat_dataset['Профинансировано'].append(
-                    empty_to_zero(dataset.iloc[i, 9]))
-                flat_dataset['% от бюджетных ассигований на 2022 г.'].append(
-                    empty_to_zero(dataset.iloc[i, 10]))
-                flat_dataset['% от лимитов бюджетных обязательств на 2022 г.'].append(
-                    empty_to_zero(dataset.iloc[i, 11]))
-                flat_dataset['% от кассового плана'].append(
-                    empty_to_zero(dataset.iloc[i, 12]))
-                flat_dataset['Выставленные заявки на оплату расходов '].append(
-                    empty_to_zero(dataset.iloc[i, 13]))
-                flat_dataset['Единица измерения'].append("тыс. руб")
+                flat_dataset["Дата"].append(self.date_creation)
+                flat_dataset["Наименование статей расходов"].append(name)
+                flat_dataset["Бюджетные ассигнования на 2022 год "].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1])
+                )
+                flat_dataset["Лимиты бюджетных обязательств на 2022 год"].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 1])
+                )
+                flat_dataset["КП Выделенный Облфином"].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 2])
+                )
+                flat_dataset[
+                    "КП Неиспользовано по состоянию на 27 января 2022г.(не выставлено заявок)"
+                ].append(empty_to_zero(dataset.iloc[i, 8]))
+                flat_dataset["Профинансировано"].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 3])
+                )
+                flat_dataset["% от бюджетных ассигований на 2022 г."].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 4])
+                )
+                flat_dataset["% от лимитов бюджетных обязательств на 2022 г."].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 5])
+                )
+                flat_dataset["% от кассового плана"].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 6])
+                )
+                flat_dataset["Выставленные заявки на оплату расходов "].append(
+                    empty_to_zero(dataset.iloc[i, start_coords_x_1 + 7])
+                )
+                flat_dataset["Единица измерения"].append("тыс. руб")
 
         return flat_dataset
 
     def parse(self, input_data_path="", date_creation="", output_data_path=""):
         assert input_data_path != "", "Не указан путь к исходному документу"
         assert date_creation != "", "Не указана дата обработки документа"
-        assert output_data_path != "", "Не указан путь к сохранению обработанного документа"
+        assert (
+            output_data_path != ""
+        ), "Не указан путь к сохранению обработанного документа"
         self.date_creation = date_creation
 
         dataset = pd.read_excel(input_data_path, sheet_name="ОБ   ")
@@ -142,28 +159,16 @@ if __name__ == "__main__":
     params = [
         (
             "--input_data_path",
-            {
-                "dest": "input_data_path",
-                        "type": str,
-                "default": ""
-            },
+            {"dest": "input_data_path", "type": str, "default": ""},
         ),
         (
             "--date_creation",
-            {
-                "dest": "date_creation",
-                        "type": str,
-                "default": ""
-            },
+            {"dest": "date_creation", "type": str, "default": ""},
         ),
         (
             "--output_data_path",
-            {
-                "dest": "output_data_path",
-                        "type": str,
-                "default": ""
-            },
-        )
+            {"dest": "output_data_path", "type": str, "default": ""},
+        ),
     ]
 
     for name, param in params:
@@ -176,4 +181,10 @@ if __name__ == "__main__":
     # parse dataset
     data_parser = DataParser_7()
     # print(args)
+    args = {
+        # "input_data_path": "./data/data3/Анализ финансирования на 08.09.2022.xls",
+        "input_data_path": "./data/data2/Книга1.xls",
+        "date_creation": "12/12/12",
+        "output_data_path": "./test.xlsx",
+    }
     data_parser.parse(**args)
