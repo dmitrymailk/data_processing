@@ -184,6 +184,7 @@ class CallsParser:
         )
 
         download_button.click()
+        self.driver.close()  # close the current window
 
 
 if __name__ == "__main__":
