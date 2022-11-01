@@ -152,38 +152,10 @@ class DataParser_7:
 
 
 if __name__ == "__main__":
-    # parse comand line arguments
-    # directory_path - это папка со всеми документами отдельно и с итоговым документом в разрезе всех округов
-    # python .\data_parser_7.py --input_data_path="./data/Анализ финансирования на 23.06.2022.xls" --output_data_path="./test_1_processs.xlsx" --date_creation="12\12\12"
-    parser = argparse.ArgumentParser(description="Parsing parameters")
-    params = [
-        (
-            "--input_data_path",
-            {"dest": "input_data_path", "type": str, "default": ""},
-        ),
-        (
-            "--date_creation",
-            {"dest": "date_creation", "type": str, "default": ""},
-        ),
-        (
-            "--output_data_path",
-            {"dest": "output_data_path", "type": str, "default": ""},
-        ),
-    ]
-
-    for name, param in params:
-        parser.add_argument(name, **param)
-
-    args = parser.parse_args()
-    args = args._get_kwargs()
-    args = {arg[0]: arg[1] for arg in args}
-
     # parse dataset
     data_parser = DataParser_7()
-    # print(args)
     args = {
-        # "input_data_path": "./data/data3/Анализ финансирования на 08.09.2022.xls",
-        "input_data_path": "./data/data2/Книга1.xls",
+        "input_data_path": "./data/data4/Анализ финансирования на 06.10.2022.xls",
         "date_creation": "12/12/12",
         "output_data_path": "./test.xlsx",
     }

@@ -69,10 +69,10 @@ class DataParser_7_1:
     def dataset_converter(self, dataset: pd.DataFrame):
         columns = [
             "Наименование статей расходов",
-            'Уточненные бюджетные ассигнования на 2022 год',
-            'Уточненные лимиты бюджетных обязательств  на 2022 год',
-            'Кассовый план',
-            'Профинансировано  '
+            "Уточненные бюджетные ассигнования на 2022 год",
+            "Уточненные лимиты бюджетных обязательств  на 2022 год",
+            "Кассовый план",
+            "Профинансировано  ",
         ]
 
         dataset.fillna(0, inplace=True)
@@ -90,6 +90,7 @@ class DataParser_7_1:
             item_4 = dataset.iloc[i, 7]
 
             items = [item_0, item_1, item_2, item_3, item_4]
+
             if not "Итого из средств пенсионного" in item_0:
                 append_flat_dataset(flat_dataset, columns, items)
 
@@ -99,7 +100,7 @@ class DataParser_7_1:
                 0,
                 0,
                 0,
-                0
+                0,
             ]
         ]
         append_flat_dataset(flat_dataset, columns, mock_data[0])
@@ -109,10 +110,12 @@ class DataParser_7_1:
     def parse(self, input_data_path="", date_creation="", output_data_path=""):
         assert input_data_path != "", "Не указан путь к исходному документу"
         assert date_creation != "", "Не указана дата обработки документа"
-        assert output_data_path != "", "Не указан путь к сохранению обработанного документа"
+        assert (
+            output_data_path != ""
+        ), "Не указан путь к сохранению обработанного документа"
         self.date_creation = date_creation
 
-        dataset = pd.read_excel(input_data_path, sheet_name="ОБ   ")
+        dataset = pd.read_excel(input_data_path, sheet_name="ФБ  ")
         dataset.fillna(0, inplace=True)
 
         flat_dataset = self.dataset_converter(dataset=dataset)
@@ -121,45 +124,11 @@ class DataParser_7_1:
 
 
 if __name__ == "__main__":
-    # parse comand line arguments
-    # directory_path - это папка со всеми документами отдельно и с итоговым документом в разрезе всех округов
-    # python .\data_parser_7.py --input_data_path="./data/Анализ финансирования на 23.06.2022.xls" --output_data_path="./test_1_processs.xlsx" --date_creation="12\12\12"
-    parser = argparse.ArgumentParser(description="Parsing parameters")
-    params = [
-        (
-            "--input_data_path",
-            {
-                "dest": "input_data_path",
-                        "type": str,
-                        "default": ""
-            },
-        ),
-        (
-            "--date_creation",
-            {
-                "dest": "date_creation",
-                        "type": str,
-                        "default": ""
-            },
-        ),
-        (
-            "--output_data_path",
-            {
-                "dest": "output_data_path",
-                        "type": str,
-                        "default": ""
-            },
-        )
-    ]
-
-    for name, param in params:
-        parser.add_argument(name, **param)
-
-    args = parser.parse_args()
-    args = args._get_kwargs()
-    args = {arg[0]: arg[1] for arg in args}
-
-    # parse dataset
     data_parser = DataParser_7_1()
-    # print(args)
+    args = {
+        "input_data_path": "./data/data4/Анализ финансирования на 22.09.2022.xls",
+        "date_creation": "12/12/12",
+        "output_data_path": "D:/programming/AI/volgograd/data_processing/data_parser_7/test.xlsx",
+    }
+    # python ./data_parser_7_1.py
     data_parser.parse(**args)
