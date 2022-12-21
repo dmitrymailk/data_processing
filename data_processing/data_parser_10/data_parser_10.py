@@ -74,6 +74,7 @@ class Data_parser_10:
         # создаем колонки для итогового датасета
         new_dataset_columns = [
             "Дата",
+            "Выберете дату",
             "Страна",
             "Наименование округа",
             "Наименование субъекта",
@@ -142,6 +143,10 @@ class Data_parser_10:
                         date = self.non_numeric_dates[date]
                         date = f"01.{date}.2022"
 
+                    # еще одна колонка даты формата ГГГГ-ММ-ДД
+                    date_2 = date.split(".")
+                    date_2 = f"{date_2[2]}-{date_2[1]}-{date_2[0]}"
+
                     products_type = product_types_dict[product_name]
                     # заполняем итоговый датасет
                     flat_dataset["Дата"].append(date)
@@ -152,6 +157,7 @@ class Data_parser_10:
                     flat_dataset["Наименование товара"].append(product_name)
                     flat_dataset["Средняя цена"].append(avg_price)
                     flat_dataset["Позиция в рейтинге"].append("")
+                    flat_dataset["Выберете дату"].append(date_2)
 
                     area_names_set.add(subject_name)
                     dates_set.add(date)
