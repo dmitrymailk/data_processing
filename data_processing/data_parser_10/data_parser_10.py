@@ -262,31 +262,14 @@ class Data_parser_10:
 
 
 if __name__ == "__main__":
-    # parse comand line arguments
-    # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\Исходник УслугиСредние_потребительские_цены_на_услуги.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\types 7.xlsx"
-    # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\3_Индекс_потребительских_цен_ИПЦ_ПродыИндекс_потребительских_цен.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\types.xlsx"
-    parser = argparse.ArgumentParser(description="Parsing parameters")
-    params = [
-        (
-            "--input_data_path",
-            {"dest": "input_data_path", "type": str, "default": ""},
-        ),
-        (
-            "--input_data_types_path",
-            {"dest": "input_data_types_path", "type": str, "default": ""},
-        ),
-    ]
-
-    for name, param in params:
-        parser.add_argument(name, **param)
-
-    args = parser.parse_args()
-    args = args._get_kwargs()
-    # args = {arg[0]: arg[1] for arg in args}
-    script_path = os.path.dirname(os.path.abspath(__file__))
+    # script_path = os.path.dirname(os.path.abspath(__file__))
+    # args = {
+    #     "input_data_path": f"{script_path}\\data\\test2\\Средние_потребительские_цены_на_непродовольственные_товарыСредние.xlsx",
+    #     "input_data_types_path": f"{script_path}\\data\\test2\\types.xlsx",
+    # }
     args = {
-        "input_data_path": f"{script_path}\\data\\test2\\Средние_потребительские_цены_на_непродовольственные_товарыСредние.xlsx",
-        "input_data_types_path": f"{script_path}\\data\\test2\\types.xlsx",
+        "input_data_path": "ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ДАННЫМ",
+        "input_data_types_path": f"ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ФАЙЛУ С ТИПАМИ",
     }
     # parse dataset
     data_parser = Data_parser_10()
