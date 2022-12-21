@@ -1,10 +1,18 @@
 import pandas as pd
 import numpy as np
 import argparse
+import os
+from tqdm import tqdm
 
 
 class Data_parser_10:
-    """парсер для файлов типа "Экономика"
+    """парсер для файлов типа
+    - "Экономика"
+    - "Средние потребительские цены на непродовольственные товары"
+
+
+    TODO: если попросят добавить новый функционал, то нужно будет тут все
+    отрефакторить и подумать об функциях общего назначения
     """
 
     def __init__(self) -> None:
@@ -23,12 +31,12 @@ class Data_parser_10:
             "Ноябрь",
             "Декабрь",
         ]
-        self.non_numeric_dates = {date: i+1 for i,
-                                  date in enumerate(self.non_numeric_dates)}
+        self.non_numeric_dates = {
+            date: i + 1 for i, date in enumerate(self.non_numeric_dates)
+        }
 
     def check_document_type(self, data: pd.DataFrame) -> int:
-        """проверяет тип документа
-        """
+        """проверяет тип документа"""
         cell_data_type = type(data.iloc[6, 1])
         if cell_data_type is str:
             return "with_numerical_date"
@@ -38,28 +46,32 @@ class Data_parser_10:
     def dataset_converter(self, dataset: pd.DataFrame) -> pd.DataFrame:
         area_coords = []
 
+        # парсим начало и конец областей
         for i in range(len(dataset.columns)):
             item = dataset.iloc[2, i]
             item = str(item)
             if len(item) > 5:
                 if len(area_coords) > 0:
                     area_coords[-1].append([2, i])
-                area_coords.append(
-                    [
-                        item,
-                        [2, i]
-                    ]
-                )
+                area_coords.append([item, [2, i]])
         area_coords[-1].append([2, len(dataset.columns)])
 
-        area_coords.insert(0, ['', [2, 1], [2, area_coords[0][1][-1]]])
+        # в начале у нас страна, поэтому добавляем пустое название
+        area_coords.insert(0, ["", [2, 1], [2, area_coords[0][1][-1]]])
 
+        # создаем словать для типов товаров, чтобы можно было разделить их по категориям
         product_types = pd.read_excel(self.input_data_types_path)
-        product_types_dict = {product_types['product_types'].iloc[i]: product_types['category'].iloc[i].strip(
-        ) for i in range(len(product_types['product_types']))}
+        product_types_dict = {
+            product_types["product_types"]
+            .iloc[i]: product_types["category"]
+            .iloc[i]
+            .strip()
+            for i in range(len(product_types["product_types"]))
+        }
 
         product_types_set = list(set(product_types_dict.values()))
 
+        # создаем колонки для итогового датасета
         new_dataset_columns = [
             "Дата",
             "Страна",
@@ -70,8 +82,7 @@ class Data_parser_10:
             "Наименование товара",
             "Средняя цена",
             "Позиция в рейтинге",
-
-            *product_types_set
+            *product_types_set,
         ]
 
         flat_dataset = {name: [] for name in new_dataset_columns}
@@ -80,8 +91,12 @@ class Data_parser_10:
         product_name_set = set()
 
         def my_argsort(my_list, add=1):
+            """
+            функция для сортировки списка и возвращения индексов
+            в нашем случае это надо для того, чтобы определить позицию товара в рейтинге
+            """
             sorted_list = sorted(my_list)
-            return [sorted_list.index(item)+add for item in my_list]
+            return [sorted_list.index(item) + add for item in my_list]
 
         document_type = self.check_document_type(dataset)
         start_parse_index = 0
@@ -94,35 +109,46 @@ class Data_parser_10:
             end_parse_index = len(dataset)
 
         area_name = ""
-        for i in range(len(area_coords)):
+        # обрабатываем датасет по областям
+        for i in tqdm(range(len(area_coords))):
             start_coords = area_coords[i]
             start_y, start_x = start_coords[1]
             end_y, end_x = start_coords[2]
 
             subject_name = dataset.iloc[start_y, start_x].strip()
-            for col in range(start_x, end_x):
 
+            # начинаем пробегать по области, column_index
+            # соответствует столбцу с датами
+            for column_index in range(start_x, end_x):
+
+                # пробегаем по строкам, j соответствует строке с названием товара
                 for j in range(start_parse_index, end_parse_index):
                     product_name = dataset.iloc[j, 0].strip()
 
-                    if len(str(dataset.iloc[3, col])) > 0 and not dataset.iloc[3, col] is np.nan:
-                        area_name = dataset.iloc[3, col].strip()
+                    if (
+                        len(str(dataset.iloc[3, column_index])) > 0
+                        and not dataset.iloc[3, column_index] is np.nan
+                    ):
+                        area_name = dataset.iloc[3, column_index].strip()
 
-                    avg_price = dataset.iloc[j, col]
-                    date = str(dataset.iloc[6, col]).strip()
+                    # берем цену товара на данную дату
+                    avg_price = dataset.iloc[j, column_index]
+                    date = str(dataset.iloc[6, column_index]).strip()
+
+                    # если дата не числовая, то преобразуем ее в числовую
+                    # при помощи словаря non_numeric_dates
                     if document_type == "without_numerical_date":
-                        # date = "01.06.2022"
-                        date = str(dataset.iloc[5, col]).strip()
+                        date = str(dataset.iloc[5, column_index]).strip()
                         date = self.non_numeric_dates[date]
                         date = f"01.{date}.2022"
 
                     products_type = product_types_dict[product_name]
+                    # заполняем итоговый датасет
                     flat_dataset["Дата"].append(date)
                     flat_dataset["Страна"].append("Российская Федерация")
                     flat_dataset["Наименование округа"].append(subject_name)
                     flat_dataset["Наименование субъекта"].append(area_name)
-                    flat_dataset["Категория товара или услуги"].append(
-                        products_type)
+                    flat_dataset["Категория товара или услуги"].append(products_type)
                     flat_dataset["Наименование товара"].append(product_name)
                     flat_dataset["Средняя цена"].append(avg_price)
                     flat_dataset["Позиция в рейтинге"].append("")
@@ -132,16 +158,15 @@ class Data_parser_10:
                     product_name_set.add(product_name)
 
                     if subject_name.strip() == "":
-                        flat_dataset["Тип агрегации"].append(
-                            "Общее значение по РФ")
+                        flat_dataset["Тип агрегации"].append("Общее значение по РФ")
 
                     if subject_name.strip() != "" and area_name.strip() == "":
-                        flat_dataset["Тип агрегации"].append(
-                            "Общее значение по округу")
+                        flat_dataset["Тип агрегации"].append("Общее значение по округу")
 
                     if subject_name.strip() != "" and area_name.strip() != "":
                         flat_dataset["Тип агрегации"].append(
-                            "Общее значение по региону")
+                            "Общее значение по региону"
+                        )
 
                     # print(p_type, products_type)
                     for p_type in product_types_set:
@@ -155,39 +180,71 @@ class Data_parser_10:
         product_name_set = list(product_name_set)
 
         p_data = pd.DataFrame(data=flat_dataset)
-        p_data.to_excel("./test.xlsx", index=False)
+        # заполняем пустые места в датасете
+        # чтобы использовать это потом для подсчета рейтинга
+        for area_name in area_names_set:
+            if area_name.strip() == "":
+                continue
 
-        for date in dates_set:
+            new_col_name = f"Позиция в рейтинге {area_name}"
+            p_data[new_col_name] = ""
+
+        # делаем рейтинг для каждого товара
+        # отдельно по каждой дате среди всех субъектов
+        for date in tqdm(dates_set):
             for product_name in product_name_set:
-                prices = p_data[(p_data['Наименование товара'] == product_name) & (
-                    p_data['Дата'] == date) & (p_data['Наименование субъекта'] != '')]['Средняя цена']
+                # считаем для всех субъектов
+                prices = p_data[
+                    (p_data["Наименование товара"] == product_name)
+                    & (p_data["Дата"] == date)
+                    & (p_data["Наименование субъекта"] != "")
+                ]["Средняя цена"]
                 prices_values = prices.values
                 prices_index = list(prices.index)
-                non_nan_prices = {
-                    "prices": [],
-                    "indexes": []
-                }
+                non_nan_prices = {"prices": [], "indexes": []}
 
                 for i, price in enumerate(prices_values):
                     if not pd.isna(price):
-                        non_nan_prices['prices'].append(price)
-                        non_nan_prices['indexes'].append(prices_index[i])
-                rating = my_argsort(non_nan_prices['prices'])
-                prices_index = pd.Index(non_nan_prices['indexes'])
-                p_data['Позиция в рейтинге'][prices_index] = rating
+                        non_nan_prices["prices"].append(price)
+                        non_nan_prices["indexes"].append(prices_index[i])
+                rating = my_argsort(non_nan_prices["prices"])
+                prices_index = pd.Index(non_nan_prices["indexes"])
+                p_data["Позиция в рейтинге"][prices_index] = rating
 
-        p_data['Дата'] = pd.to_datetime(
-            p_data['Дата'], format='%d.%m.%Y', errors='coerce')
-        # p_data.head(10)
+                # считаем отдельно для округов, смысл не меняется
+                for special_area_name in area_names_set:
+                    if special_area_name.strip() == "":
+                        continue
+
+                    column_rating_name = f"Позиция в рейтинге {special_area_name}"
+                    prices = p_data[
+                        (p_data["Наименование товара"] == product_name)
+                        & (p_data["Дата"] == date)
+                        & (p_data["Наименование округа"] == special_area_name)
+                    ]["Средняя цена"]
+                    prices_values = prices.values
+                    prices_index = list(prices.index)
+                    non_nan_prices = {"prices": [], "indexes": []}
+
+                    for i, price in enumerate(prices_values):
+                        if not pd.isna(price):
+                            non_nan_prices["prices"].append(price)
+                            non_nan_prices["indexes"].append(prices_index[i])
+                    rating = my_argsort(non_nan_prices["prices"])
+                    prices_index = pd.Index(non_nan_prices["indexes"])
+                    p_data[column_rating_name][prices_index] = rating
+
+        p_data["Дата"] = pd.to_datetime(
+            p_data["Дата"], format="%d.%m.%Y", errors="coerce"
+        )
 
         return p_data
 
-    def parse(self,
-              input_data_path="",
-              input_data_types_path=""
-              ) -> None:
+    def parse(self, input_data_path="", input_data_types_path="") -> None:
         assert input_data_path != "", "Не указан путь к исходному документу"
-        assert input_data_types_path != "", "Не указан путь к файлу с названиями типов продуктов"
+        assert (
+            input_data_types_path != ""
+        ), "Не указан путь к файлу с названиями типов продуктов"
 
         self.input_data_types_path = input_data_types_path
 
@@ -195,10 +252,10 @@ class Data_parser_10:
 
         dataset: pd.DataFrame = self.dataset_converter(dataset=dataset)
         output_data_path = input_data_path.replace(".xlsx", "_parsed.xlsx")
-        dataset.to_excel(output_data_path, index=False, encoding='utf-8')
+        dataset.to_excel(output_data_path, index=False, encoding="utf-8")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # parse comand line arguments
     # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\Исходник УслугиСредние_потребительские_цены_на_услуги.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\7 Услуги_Средние_цены_\types 7.xlsx"
     # python .\data_parser_10.py --input_data_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\3_Индекс_потребительских_цен_ИПЦ_ПродыИндекс_потребительских_цен.xlsx" --input_data_types_path="D:\programming\AI\volgograd\data_processing\data_parser_10\data\3\types.xlsx"
@@ -206,20 +263,12 @@ if __name__ == '__main__':
     params = [
         (
             "--input_data_path",
-            {
-                "dest": "input_data_path",
-                        "type": str,
-                "default": ""
-            },
+            {"dest": "input_data_path", "type": str, "default": ""},
         ),
         (
             "--input_data_types_path",
-            {
-                "dest": "input_data_types_path",
-                        "type": str,
-                "default": ""
-            },
-        )
+            {"dest": "input_data_types_path", "type": str, "default": ""},
+        ),
     ]
 
     for name, param in params:
@@ -227,8 +276,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     args = args._get_kwargs()
-    args = {arg[0]: arg[1] for arg in args}
-
+    # args = {arg[0]: arg[1] for arg in args}
+    script_path = os.path.dirname(os.path.abspath(__file__))
+    args = {
+        "input_data_path": f"{script_path}\\data\\test2\\Средние_потребительские_цены_на_непродовольственные_товарыСредние.xlsx",
+        "input_data_types_path": f"{script_path}\\data\\test2\\types.xlsx",
+    }
     # parse dataset
     data_parser = Data_parser_10()
     # print(args)
