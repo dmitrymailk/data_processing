@@ -75,6 +75,7 @@ class Data_parser_10:
         new_dataset_columns = [
             "Дата",
             "Выберете дату",
+            "Месяц",
             "Страна",
             "Наименование округа",
             "Наименование субъекта",
@@ -146,7 +147,7 @@ class Data_parser_10:
                     # еще одна колонка даты формата ГГГГ-ММ-ДД
                     date_2 = date.split(".")
                     date_2 = f"{date_2[2]}-{date_2[1]}-{date_2[0]}"
-
+                    month = date_2[3:].replace("-", ".")
                     products_type = product_types_dict[product_name]
                     # заполняем итоговый датасет
                     flat_dataset["Дата"].append(date)
@@ -158,6 +159,7 @@ class Data_parser_10:
                     flat_dataset["Средняя цена"].append(avg_price)
                     flat_dataset["Позиция в рейтинге"].append("")
                     flat_dataset["Выберете дату"].append(date_2)
+                    flat_dataset["Месяц"].append(month)
 
                     area_names_set.add(subject_name)
                     dates_set.add(date)
@@ -243,6 +245,28 @@ class Data_parser_10:
         p_data["Дата"] = pd.to_datetime(
             p_data["Дата"], format="%d.%m.%Y", errors="coerce"
         )
+        p_data["Значение по типу агрегации"] = ""
+
+        p_data["Значение по типу агрегации"][
+            (p_data["Наименование округа"] == "")
+            & (p_data["Наименование субъекта"] == "")
+        ] = "Российская Федерация"
+
+        p_data["Значение по типу агрегации"][
+            (p_data["Наименование округа"] != "")
+            & (p_data["Наименование субъекта"] == "")
+        ] = p_data["Наименование округа"][
+            (p_data["Наименование округа"] != "")
+            & (p_data["Наименование субъекта"] == "")
+        ]
+
+        p_data["Значение по типу агрегации"][
+            (p_data["Наименование округа"] != "")
+            & (p_data["Наименование субъекта"] != "")
+        ] = p_data["Наименование субъекта"][
+            (p_data["Наименование округа"] != "")
+            & (p_data["Наименование субъекта"] != "")
+        ]
 
         return p_data
 
@@ -262,7 +286,7 @@ class Data_parser_10:
 
 
 if __name__ == "__main__":
-    # script_path = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.dirname(os.path.abspath(__file__))
     # args = {
     #     "input_data_path": f"{script_path}\\data\\test2\\Средние_потребительские_цены_на_непродовольственные_товарыСредние.xlsx",
     #     "input_data_types_path": f"{script_path}\\data\\test2\\types.xlsx",
