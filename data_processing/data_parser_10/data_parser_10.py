@@ -4,6 +4,8 @@ import argparse
 import os
 from tqdm import tqdm
 
+pd.options.mode.chained_assignment = None
+
 
 class Data_parser_10:
     """парсер для файлов типа
@@ -281,7 +283,12 @@ class Data_parser_10:
         dataset = pd.read_excel(input_data_path)
 
         dataset: pd.DataFrame = self.dataset_converter(dataset=dataset)
-        output_data_path = input_data_path.replace(".xlsx", "_parsed.xlsx")
+        # output_data_path = input_data_path.replace(".xlsx", "_parsed.xlsx")
+        output_data_folder = input_data_path.replace(".xlsx", "")
+        if not os.path.isdir(output_data_folder):
+            os.mkdir(output_data_folder)
+
+        output_data_path = output_data_folder + "\\parsed.xlsx"
         dataset.to_excel(output_data_path, index=False, encoding="utf-8")
 
 
