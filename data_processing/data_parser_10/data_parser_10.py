@@ -3,6 +3,8 @@ import numpy as np
 import argparse
 import os
 from tqdm import tqdm
+from pathlib import Path
+from datetime import datetime
 
 pd.options.mode.chained_assignment = None
 
@@ -284,12 +286,28 @@ class Data_parser_10:
 
         dataset: pd.DataFrame = self.dataset_converter(dataset=dataset)
         # output_data_path = input_data_path.replace(".xlsx", "_parsed.xlsx")
-        output_data_folder = input_data_path.replace(".xlsx", "")
+        # output_data_folder = input_data_path.replace(".xlsx", "")
+        now = datetime.now()
+        dt_string = now.strftime("%d.%m.%Y_%H.%M.%S")
+        types_name = Path(self.input_data_types_path).stem
+        output_data_folder = Path(
+            Path(input_data_path).parent.absolute(),
+            f"parsed_{types_name}_{dt_string}",
+        )
         if not os.path.isdir(output_data_folder):
             os.mkdir(output_data_folder)
 
-        output_data_path = output_data_folder + "\\parsed.xlsx"
-        dataset.to_excel(output_data_path, index=False, encoding="utf-8")
+        # output_data_path = output_data_folder + "\\parsed.xlsx"
+        step = 1_00_000
+        steps = max(len(dataset) // step, 1)
+        for pos in tqdm(range(0, steps + 1, 1)):
+            output_filename = f"{output_data_folder}/parsed_{pos}.xlsx"
+            if pos == steps:
+                dataset[step * pos :].to_excel(output_filename, index=False)
+            else:
+                dataset[step * pos : step * (pos + 1)].to_excel(
+                    output_filename, index=False
+                )
 
 
 if __name__ == "__main__":
