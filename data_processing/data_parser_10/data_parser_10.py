@@ -8,6 +8,9 @@ from datetime import datetime
 
 pd.options.mode.chained_assignment = None
 
+import datatable as dt
+from pyexcelerate import Workbook
+
 
 class Data_parser_10:
     """парсер для файлов типа
@@ -194,34 +197,31 @@ class Data_parser_10:
         p_data = pd.DataFrame(data=flat_dataset)
         # заполняем пустые места в датасете
         # чтобы использовать это потом для подсчета рейтинга
+        p_data = dt.Frame(p_data)
         for area_name in area_names_set:
             if area_name.strip() == "":
                 continue
 
             new_col_name = f"Позиция в рейтинге {area_name}"
-            p_data[new_col_name] = ""
+            p_data[:, new_col_name] = 0
 
         # делаем рейтинг для каждого товара
         # отдельно по каждой дате среди всех субъектов
+        p_data[:, "Позиция в рейтинге"] = 0
         for date in tqdm(dates_set):
             for product_name in product_name_set:
                 # считаем для всех субъектов
-                prices = p_data[
-                    (p_data["Наименование товара"] == product_name)
-                    & (p_data["Дата"] == date)
-                    & (p_data["Наименование субъекта"] != "")
-                ]["Средняя цена"]
-                prices_values = prices.values
-                prices_index = list(prices.index)
-                non_nan_prices = {"prices": [], "indexes": []}
+                filter_condition = (
+                    (dt.f["Наименование товара"] == product_name)
+                    & (dt.f["Дата"] == date)
+                    & (dt.f["Наименование субъекта"] != "")
+                )
+                prices = p_data[filter_condition, :]["Средняя цена"]
+                prices_values = prices.to_numpy().tolist()
 
-                for i, price in enumerate(prices_values):
-                    if not pd.isna(price):
-                        non_nan_prices["prices"].append(price)
-                        non_nan_prices["indexes"].append(prices_index[i])
-                rating = my_argsort(non_nan_prices["prices"])
-                prices_index = pd.Index(non_nan_prices["indexes"])
-                p_data["Позиция в рейтинге"][prices_index] = rating
+                rating = my_argsort(prices_values)
+                rating = np.array(rating)
+                p_data[filter_condition, "Позиция в рейтинге"] = rating
 
                 # считаем отдельно для округов, смысл не меняется
                 for special_area_name in area_names_set:
@@ -229,49 +229,39 @@ class Data_parser_10:
                         continue
 
                     column_rating_name = f"Позиция в рейтинге {special_area_name}"
-                    prices = p_data[
-                        (p_data["Наименование товара"] == product_name)
-                        & (p_data["Дата"] == date)
-                        & (p_data["Наименование округа"] == special_area_name)
-                    ]["Средняя цена"]
-                    prices_values = prices.values
-                    prices_index = list(prices.index)
-                    non_nan_prices = {"prices": [], "indexes": []}
+                    filter_condition = (
+                        (dt.f["Наименование товара"] == product_name)
+                        & (dt.f["Дата"] == date)
+                        & (dt.f["Наименование округа"] == special_area_name)
+                    )
+                    prices = p_data[filter_condition, :]["Средняя цена"]
+                    prices_values = prices.to_numpy().tolist()
 
-                    for i, price in enumerate(prices_values):
-                        if not pd.isna(price):
-                            non_nan_prices["prices"].append(price)
-                            non_nan_prices["indexes"].append(prices_index[i])
-                    rating = my_argsort(non_nan_prices["prices"])
-                    prices_index = pd.Index(non_nan_prices["indexes"])
-                    p_data[column_rating_name][prices_index] = rating
+                    rating = my_argsort(prices_values)
+                    rating = np.array(rating)
+                    p_data[filter_condition, column_rating_name] = rating
 
-        p_data["Дата"] = pd.to_datetime(
-            p_data["Дата"], format="%d.%m.%Y", errors="coerce"
-        )
-        p_data["Значение по типу агрегации"] = ""
+        # p_data[:, "Значение по типу агрегации"] = ""
 
-        p_data["Значение по типу агрегации"][
-            (p_data["Наименование округа"] == "")
-            & (p_data["Наименование субъекта"] == "")
-        ] = "Российская Федерация"
+        # p_data[
+        #     (dt.f["Наименование округа"] == "") & (dt.f["Наименование субъекта"] == ""),
+        #     "Значение по типу агрегации"
+        # ] = "Российская Федерация"
 
-        p_data["Значение по типу агрегации"][
-            (p_data["Наименование округа"] != "")
-            & (p_data["Наименование субъекта"] == "")
-        ] = p_data["Наименование округа"][
-            (p_data["Наименование округа"] != "")
-            & (p_data["Наименование субъекта"] == "")
-        ]
+        # p_data[
+        #     (dt.f["Наименование округа"] != "") & (dt.f["Наименование субъекта"] == ""),
+        #     "Значение по типу агрегации"
+        # ] = p_data["Наименование округа"][
+        #     (dt.f["Наименование округа"] != "") & (dt.f["Наименование субъекта"] == "")
+        # ]
 
-        p_data["Значение по типу агрегации"][
-            (p_data["Наименование округа"] != "")
-            & (p_data["Наименование субъекта"] != "")
-        ] = p_data["Наименование субъекта"][
-            (p_data["Наименование округа"] != "")
-            & (p_data["Наименование субъекта"] != "")
-        ]
-
+        # p_data[
+        #     (dt.f["Наименование округа"] != "") & (dt.f["Наименование субъекта"] != ""),
+        #     "Значение по типу агрегации"
+        # ] = p_data["Наименование субъекта"][
+        #     (dt.f["Наименование округа"] != "") & (dt.f["Наименование субъекта"] != "")
+        # ]
+        p_data = p_data.to_pandas()
         return p_data
 
     def parse(self, input_data_path="", input_data_types_path="") -> None:
@@ -302,25 +292,34 @@ class Data_parser_10:
         steps = max(len(dataset) // step, 1)
         for pos in tqdm(range(0, steps + 1, 1)):
             output_filename = f"{output_data_folder}/parsed_{pos}.xlsx"
+            dataset_part = None
             if pos == steps:
-                dataset[step * pos :].to_excel(output_filename, index=False)
+                dataset_part = dataset[step * pos :]
             else:
-                dataset[step * pos : step * (pos + 1)].to_excel(
-                    output_filename, index=False
-                )
+                dataset_part = dataset[step * pos : step * (pos + 1)]
+            values = [dataset_part.columns] + list(dataset_part.values)
+            wb = Workbook()
+            wb.new_sheet("sheet name", data=values)
+            wb.save(output_filename)
 
 
-if __name__ == "__main__":
+def main():
     script_path = os.path.dirname(os.path.abspath(__file__))
-    # args = {
-    #     "input_data_path": f"{script_path}\\data\\test2\\Средние_потребительские_цены_на_непродовольственные_товарыСредние.xlsx",
-    #     "input_data_types_path": f"{script_path}\\data\\test2\\types.xlsx",
-    # }
     args = {
-        "input_data_path": "ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ДАННЫМ",
-        "input_data_types_path": f"ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ФАЙЛУ С ТИПАМИ",
+        "input_data_path": f"{script_path}\\data\\3\\3_Индекс_потребительских_цен_ИПЦ_ПродыИндекс_потребительских_цен.xlsx",
+        "input_data_types_path": f"{script_path}\\data\\3\\types.xlsx",
+        # "input_data_path": f"./data/3/3_Индекс_потребительских_цен_ИПЦ_ПродыИндекс_потребительских_цен.xlsx",
+        # "input_data_types_path": f"./data/3/types.xlsx",
     }
+    # args = {
+    #     "input_data_path": "ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ДАННЫМ",
+    #     "input_data_types_path": f"ТУТ УКАЗЫВАЕМ АБСОЛЮТНЫЙ ПУТЬ К ФАЙЛУ С ТИПАМИ",
+    # }
     # parse dataset
     data_parser = Data_parser_10()
     # print(args)
     data_parser.parse(**args)
+
+
+if __name__ == "__main__":
+    main()
