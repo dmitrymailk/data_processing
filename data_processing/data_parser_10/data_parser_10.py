@@ -129,7 +129,6 @@ class Data_parser_10:
             # начинаем пробегать по области, column_index
             # соответствует столбцу с датами
             for column_index in range(start_x, end_x):
-
                 # пробегаем по строкам, j соответствует строке с названием товара
                 for j in range(start_parse_index, end_parse_index):
                     product_name = dataset.iloc[j, 0].strip()
